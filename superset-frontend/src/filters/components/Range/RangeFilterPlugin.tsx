@@ -301,6 +301,7 @@ export default function RangeFilterPlugin(props: PluginFilterRangeProps) {
   }, [enableSingleExactValue]);
 
   const MIN_NUM_STEPS = 20;
+  const HEURISTIC_THRESHOLD = 15;
   const stepHeuristic = (min: number, max: number) => {
     const maxStepSize = (max - min) / MIN_NUM_STEPS;
     // normalizedStepSize: .06 -> .01, .003 -> .001
@@ -308,8 +309,9 @@ export default function RangeFilterPlugin(props: PluginFilterRangeProps) {
     return Math.min(1, parseFloat(normalizedStepSize));
   };
 
-  const step = max - min <= 1 ? stepHeuristic(min, max) : 1;
-
+  const allInteger = Number.isInteger(min) && Number.isInteger(max)
+  const belowThreshold = max - min <= HEURISTIC_THRESHOLD
+  const step = belowThreshold && !allInteger ? stepHeuristic(min, max) : 1;
   return (
     <FilterPluginStyle height={height} width={width}>
       {Number.isNaN(Number(min)) || Number.isNaN(Number(max)) ? (
