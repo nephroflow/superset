@@ -1,0 +1,72 @@
+name: Process Issue comments
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  notion:
+    name: Notion
+    if: github.event.issue.pull_request != '' &&  contains(github.event.comment.user.login, 'notion')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update PR description
+        uses: nephroflow/pr-description@v1
+        with:
+          content: "## :notebook: Linked Issues\r\n\r\n- ${{ github.event.comment.body }}"
+          regex: '## :notebook: Linked Issues\r?\n'
+          regexFlags: i
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  create_docker_image:
+    name: Create Docker image
+    if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/docker')
+    runs-on: ndte-medium
+    steps:
+      - name: Add reaction
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          comment-id: ${{ github.event.comment.id }}
+          reactions: rocket
+
+      - name: Set vars
+        run: |
+          echo "FULL_IMAGE_NAME=nephroflow.azurecr.io/superset_base:pr-${{ github.event.issue.number }}.${{ github.run_number }}" >> $GITHUB_ENV
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: "refs/pull/${{ github.event.issue.number }}/head"
+
+      - name: Build, push and sign docker image
+        uses: nephroflow/github-actions/ndte-docker-action@main
+        id: docker_push
+        with:
+          client-id: ${{ secrets.AZURE_GITHUB_ACR_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_MAIN_SUBSCRIPTION_ID }}
+          full-image-name: ${{ env.FULL_IMAGE_NAME }}
+          secrets: |
+            BUNDLER_AUTH=${{ secrets.BUNDLER_USERNAME }}:${{ secrets.BUNDLER_TOKEN }}
+
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.issue.number }}
+          body: |
+            A docker image was made especially for you: `${{ env.FULL_IMAGE_NAME }}` :tada:
+            Have fun!
+
+  always_job:
+    name: Always run job
+    runs-on: ubuntu-latest
+    steps:
+      - name: Always run
+        run: echo "This job is used to prevent the workflow to fail when all other jobs are skipped."
