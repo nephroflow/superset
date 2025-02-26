@@ -300,6 +300,8 @@ export default function RangeFilterPlugin(props: PluginFilterRangeProps) {
     }
   }, [enableSingleExactValue]);
 
+  console.log("Using forked NephroFlow Superset code!");
+
   const MIN_NUM_STEPS = 20;
   const stepHeuristic = (min: number, max: number) => {
     const maxStepSize = (max - min) / MIN_NUM_STEPS;
