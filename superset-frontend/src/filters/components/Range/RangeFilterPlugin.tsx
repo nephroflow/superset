@@ -308,8 +308,8 @@ export default function RangeFilterPlugin(props: PluginFilterRangeProps) {
     return Math.min(1, parseFloat(normalizedStepSize));
   };
 
-  const step = max - min <= 1 ? stepHeuristic(min, max) : 1;
-
+  const allInteger = Number.isInteger(min) && Number.isInteger(max);
+  const step = allInteger ? 1 : stepHeuristic(min, max);
   return (
     <FilterPluginStyle height={height} width={width}>
       {Number.isNaN(Number(min)) || Number.isNaN(Number(max)) ? (
