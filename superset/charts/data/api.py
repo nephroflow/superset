@@ -361,6 +361,10 @@ class ChartDataRestApi(ChartRestApi):
             result = apply_post_process(result, form_data, datasource)
 
         if result_format in ChartDataResultFormat.table_like():
+            import io
+            import pandas as pd
+            from superset.utils import excel, csv
+
             # Verify user has permission to export file
             if not security_manager.can_access("can_csv", "Superset"):
                 return self.response_403()
@@ -373,9 +377,18 @@ class ChartDataRestApi(ChartRestApi):
             if len(result["queries"]) == 1:
                 # return single query results
                 data = result["queries"][0]["data"]
+
                 if is_csv_format:
+                    csv_string = io.StringIO(data)
+                    df = pd.read_csv(csv_string)
+                    df.drop(columns=["Patient profile"], axis=1, inplace=True, errors='ignore')
+                    data = csv.df_to_escaped_csv(df, index=False)
                     return CsvResponse(data, headers=generate_download_headers("csv"))
 
+                output = io.BytesIO(data)
+                df = pd.read_excel(output)
+                df.drop(columns=["Patient profile", 'Unnamed: 0'], axis=1, inplace=True, errors='ignore')
+                data = excel.df_to_excel(df, index=False)
                 return XlsxResponse(data, headers=generate_download_headers("xlsx"))
 
             # return multi-query results bundled as a zip file
