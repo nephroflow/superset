@@ -626,12 +626,23 @@ class QueryContextProcessor:
                 df.columns = [verbose_map.get(column, column) for column in columns]
 
             result = None
+            columns_to_include = [
+                col
+                for col in df.columns
+                if col not in config["TABLE_EXPORT_IGNORE_COLS"]
+            ]
             if self._query_context.result_format == ChartDataResultFormat.CSV:
                 result = csv.df_to_escaped_csv(
-                    df, index=include_index, **config["CSV_EXPORT"]
+                    df,
+                    columns=columns_to_include,
+                    index=include_index,
+                    **config["CSV_EXPORT"],
                 )
             elif self._query_context.result_format == ChartDataResultFormat.XLSX:
-                result = excel.df_to_excel(df, **config["EXCEL_EXPORT"])
+                df.index += 1
+                result = excel.df_to_excel(
+                    df, columns=columns_to_include, **config["EXCEL_EXPORT"]
+                )
             return result or ""
 
         return df.to_dict(orient="records")
