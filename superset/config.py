@@ -780,6 +780,9 @@ CSV_EXPORT = {"encoding": "utf-8"}
 # note: index option should not be overridden
 EXCEL_EXPORT: dict[str, Any] = {}
 
+# The columns to ignore when exporting a table. These columns will not be added to the csv/xlsx
+TABLE_EXPORT_IGNORE_COLS = []
+
 # ---------------------------------------------------
 # Time grain configurations
 # ---------------------------------------------------
