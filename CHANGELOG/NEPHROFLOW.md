@@ -41,3 +41,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Allow decimal steps in range sliders for smaller values. [NF-5295](https://www.notion.so/nipro-digital/PHM-QI-does-not-filter-on-float-numbers-1ab44b771c6c80c2b93ad50cf3d78fcb) [NF-5218](https://www.notion.so/nipro-digital/Adjust-the-slider-min-max-values-to-allow-for-0-1-steps-1a444b771c6c80b9b8d1d96abac08827)
+- Serialize full error message in SQL Lab. [NF-5222](https://www.notion.so/Improve-readability-of-the-error-messages-1a444b771c6c80918721cfaf70952b5d?pvs=8&n=github_linkback) 
